@@ -58,12 +58,14 @@ class Cycling extends Workout {
 //Aplication Architecture
 class App {
   #map;
+  #mapZoomLevel = 13;
   #mapEvent;
   #workouts = [];
   constructor() {
     this._getPosition();
     form.addEventListener("submit", this._newWorkout.bind(this));
     inputType.addEventListener("change", this._toggleElevationField);
+    containerWorkouts.addEventListener("click", this._moveToPopup.bind(this));
   }
 
   _getPosition() {
@@ -87,7 +89,7 @@ class App {
     const coords = [latitude, longitude];
 
     //Create a map object on div with id = 'map'
-    this.#map = L.map("map").setView(coords, 13);
+    this.#map = L.map("map").setView(coords, this.#mapZoomLevel);
 
     //Display tile layers on this map
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -157,7 +159,6 @@ class App {
     }
     //Add new object to workouts array
     this.#workouts.push(workout);
-    console.log(workout);
     //Render a workout marker on the map
     this._renderWorkoutMarker(workout);
     //Render a workout on the list
@@ -228,6 +229,19 @@ class App {
     }
 
     form.insertAdjacentHTML("afterend", html);
+  }
+  _moveToPopup(e) {
+    const workoutEl = e.target.closest(".workout");
+    if (!workoutEl) return;
+    const workout = this.#workouts.find(
+      (work) => work.id === workoutEl.dataset.id
+    );
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
   }
 }
 const app = new App();
